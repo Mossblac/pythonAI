@@ -1,16 +1,18 @@
 import os
 import sys
+import argparse
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
 def main():
-    if len(sys.argv) > 1:
-        prompt = sys.argv[1]
-    else:
-        print("No prompt provided")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="a scripts with a verbose option")
+    parser.add_argument("prompt")
+    parser.add_argument("--verbose", action="store_true", help="increase output verbosity")
+    args = parser.parse_args()
 
+    prompt = args.prompt
+   
     messages = [
         types.Content(role="user", parts=[types.Part(text=prompt)]), 
     ]
@@ -21,11 +23,17 @@ def main():
     response = client.models.generate_content(
         model='gemini-2.0-flash-001', contents=messages
     )
-    print(response.text)
     x = response.usage_metadata.prompt_token_count
     y = response.usage_metadata.candidates_token_count
-    print(f"Prompt tokens: {x}")
-    print(f"Response tokens: {y}")
+
+    if args.verbose:
+        print(f"User prompt: {prompt}")
+        print(f"Prompt tokens: {x}")
+        print(f"Response tokens: {y}")
+        print(response.text)
+    else:
+        print(response.text)
+
 
 if __name__ == "__main__":
     main()
