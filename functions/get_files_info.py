@@ -8,7 +8,12 @@ def get_files_info(working_directory, directory=None):
         d = os.path.abspath(directory)
     except Exception:
         return 'Error: os.path.abspath failed'
-    if d.startswith(wk):
+    try:
+        wk_norm = os.path.normpath(wk)
+        d_norm = os.path.normpath(d)
+    except Exception:
+        return 'Error: os.path.normpath failed'
+    if d_norm == wk_norm or d_norm.startswith(wk_norm + os.sep):
         if os.path.isdir(d) == False:
             return (f'Error: "{directory}" is not a directory')
         try:
