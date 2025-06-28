@@ -18,10 +18,13 @@ def write_file(working_directory, file_path, content):
     
     if d_norm == wk_norm or d_norm.startswith(wk_norm + os.sep):
         if os.path.exists(f) == False:
+            print("file does not exist, trying to create")
             try:
                 os.makedirs(f)
+                print("file created")
             except Exception:
                 return 'Error: os.makedirs() failed'
+            
             
         if os.path.exists(f):
             try:
@@ -38,3 +41,5 @@ def write_file(working_directory, file_path, content):
                 return 'Error: failed to verify content written'
     else:
         return (f'Error: Cannot list "{file_path}" as it is outside the permitted working directory')
+    
+    
