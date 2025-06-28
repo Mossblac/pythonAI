@@ -17,17 +17,17 @@ def get_file_content(working_directory, file_path):
     except Exception:
         return 'Error: os.path.normpath failed'
     
+    trunc_message = f'...File "{file_path}" truncated at 10000 characters'
+    
     if d_norm == wk_norm or d_norm.startswith(wk_norm + os.sep):
         #try:
             if os.path.isfile(f):
-                max_characters = 10000
                 with open(f, "r") as file:
                     file_content_string = file.read()
                     if len(file_content_string) > 10000:
-                        print(f'...File "{file_path}" truncated at 10000 characters')
-                        for word in file_content_string:
-                        #file_content_string = file.read(max_characters)
-                        return file_content_string
+                        with open(f, "r") as t_file:
+                            file_content_truncated = t_file.read(10000)
+                        return file_content_truncated + trunc_message
                     else:
                         return file_content_string
             else:
