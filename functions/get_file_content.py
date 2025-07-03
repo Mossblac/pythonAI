@@ -1,5 +1,5 @@
 import os
-
+from google.genai import types
 
 def get_file_content(working_directory, file_path):
     if file_path == None:
@@ -37,3 +37,17 @@ def get_file_content(working_directory, file_path):
         
     else:
         return (f'Error: Cannot list "{file_path}" as it is outside the permitted working directory')
+
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Lists the content of files in the specified directory along with their sizes, constrained to the working directory.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="The path to the file",
+            ),
+        },
+    ),
+)
