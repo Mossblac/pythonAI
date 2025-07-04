@@ -32,7 +32,7 @@ def main():
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
 
-    generate_content(client, messages, verbose)
+    print(generate_content(client, messages, verbose))
 
 
 def generate_content(client, messages, verbose):
@@ -64,6 +64,10 @@ def generate_content(client, messages, verbose):
 
     if not function_responses:
         raise Exception("no function responses generated, exiting.")
+    
+    return "\n".join(
+    part.function_response.response["result"] for part in function_responses
+)
 
 
 if __name__ == "__main__":

@@ -1,59 +1,44 @@
 import os
 from google.genai import types
 
+
 def write_file(working_directory, file_path, content):
-    if file_path == None:
-        file_path = "."
+    abs_working_dir = os.path.abspath(working_directory)
+    abs_file_path = os.path.abspath(os.path.join(working_directory, file_path))
+    if not abs_file_path.startswith(abs_working_dir):
+        return f'Error: Cannot write to "{file_path}" as it is outside the permitted working directory'
+    if not os.path.exists(abs_file_path):
+        try:
+            os.makedirs(os.path.dirname(abs_file_path), exist_ok=True)
+        except Exception as e:
+            return f"Error: creating directory: {e}"
+    if os.path.exists(abs_file_path) and os.path.isdir(abs_file_path):
+        return f'Error: "{file_path}" is a directory, not a file'
     try:
-        pathdir = os.path.join(working_directory, file_path)
-        wk = os.path.abspath(working_directory)
-        f = os.path.abspath(pathdir)
-    except Exception:
-        return 'Error: os.path.abspath or os.path.join failed'
-    
-    try:
-        wk_norm = os.path.normpath(wk)
-        d_norm = os.path.normpath(f)
-    except Exception:
-        return 'Error: os.path.normpath failed'
-    
-    if d_norm == wk_norm or d_norm.startswith(wk_norm + os.sep):
-            if os.path.exists(f) == False:
-                try:
-                    os.makedirs(f)
-                except Exception:
-                    return 'Error: failed to create directory'
-            try:
-                with open(f, "w") as file:
-                    file.write(content)
-            except Exception:
-                return 'Error: write to file failed'
-            try:
-                with open(f, "r") as file:
-                    new_content = file.read()
-                    if new_content == content:
-                        return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
-            except Exception:
-                return 'Error: failed to verify content written'
-    else:
-        return f'Error: Cannot write "{file_path}" as it is outside the permitted working directory'
+        with open(abs_file_path, "w") as f:
+            f.write(content)
+        return (
+            f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
+        )
+    except Exception as e:
+        return f"Error: writing to file: {e}"
+
 
 schema_write_file = types.FunctionDeclaration(
     name="write_file",
-    description="create and write to files, then list what was written. constrained to the working directory.",
+    description="Writes content to a file within the working directory. Creates the file if it doesn't exist.",
     parameters=types.Schema(
-        type=types.Type.OBJECT, 
+        type=types.Type.OBJECT,
         properties={
             "file_path": types.Schema(
                 type=types.Type.STRING,
-                description="The path to the file destination",
+                description="Path to the file to write, relative to the working directory.",
             ),
             "content": types.Schema(
                 type=types.Type.STRING,
-                description="what is being written to the file"
-            )
+                description="Content to write to the file",
+            ),
         },
+        required=["file_path", "content"],
     ),
 )
-    
-    
