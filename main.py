@@ -9,6 +9,8 @@ from call_function import call_function, available_functions
 
 
 def main():
+    #for _ in range(20):
+
     load_dotenv()
 
     verbose = "--verbose" in sys.argv
@@ -32,7 +34,20 @@ def main():
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
 
-    print(generate_content(client, messages, verbose))
+    for _ in range(20):
+        output = (generate_content(client, messages, verbose))
+        for candidate in output.candidates:
+            messages.append(candidate.content)
+        if output.function_calls:
+            for function in output.function_calls:
+                function_call_result = call_function(function, verbose)
+                messages.append(function_call_result.parts[0])
+        else:
+            print(output.text)
+            break
+
+
+            
 
 
 def generate_content(client, messages, verbose):
@@ -46,28 +61,8 @@ def generate_content(client, messages, verbose):
     if verbose:
         print("Prompt tokens:", response.usage_metadata.prompt_token_count)
         print("Response tokens:", response.usage_metadata.candidates_token_count)
-
-    if not response.function_calls:
-        return response.text
-
-    function_responses = []
-    for function_call_part in response.function_calls:
-        function_call_result = call_function(function_call_part, verbose)
-        if (
-            not function_call_result.parts
-            or not function_call_result.parts[0].function_response
-        ):
-            raise Exception("empty function call result")
-        if verbose:
-            print(f"-> {function_call_result.parts[0].function_response.response}")
-        function_responses.append(function_call_result.parts[0])
-
-    if not function_responses:
-        raise Exception("no function responses generated, exiting.")
     
-    return "\n".join(
-    part.function_response.response["result"] for part in function_responses
-)
+    return response
 
 
 if __name__ == "__main__":
